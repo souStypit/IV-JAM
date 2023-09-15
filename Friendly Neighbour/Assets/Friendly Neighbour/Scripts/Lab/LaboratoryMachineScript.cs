@@ -15,7 +15,7 @@ public class LaboratoryMachineScript : MouseScript
 
     // Logical vars
     private bool onTrigger = false;     // Близко ли игрок
-    private bool isBusy = true;         // Занято ли LabMachine (сначала занята)
+    private bool isBusy;                // Занято ли LabMachine (сначала занята)
     private bool isMedicine = false;    // Готово ли лекарство
 
     // Colliders
@@ -24,6 +24,9 @@ public class LaboratoryMachineScript : MouseScript
     private void Start() {
         interactionTrigger = GetComponent<Collider>();
         slider = GetComponentInChildren<Slider>(true);
+        isBusy = true;
+        clickTime = Time.time;
+        ShowSlider();
     }
 
     void Update()
