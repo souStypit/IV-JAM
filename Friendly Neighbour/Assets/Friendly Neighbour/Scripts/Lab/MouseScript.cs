@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MouseScript : MonoBehaviour 
-{    
-    public bool GetMouseInput(Collider coll)
+public class MouseScript
+{
+    public static bool GetMouseInput(Collider coll)
     {
         if (Input.GetMouseButtonDown(0)) 
         {
@@ -16,5 +16,4 @@ public class MouseScript : MonoBehaviour
         
         return false;
     } 
-
 }

@@ -4,64 +4,125 @@ using UnityEngine;
 using UnityEngine.UI;
 
 
-public class LaboratoryMachineScript : MouseScript
+public class LaboratoryMachineScript : MonoBehaviour
 {
-    // Player
-    public PlayerController player;
+    private bool onTrigger;         // Близко ли игрок
+    private bool isBusy;            // Занято ли LabMachine (сначала занята)
+    private bool medicineIsReady;   // Готово ли лекарство
 
-    // UI
-    public Slider slider;
-    public float waitTime = 4f, clickTime, timePassed;
+    private CapsuleCollider interactionObject;
+    private Medicine medicine;
 
-    // Logical vars
-    private bool onTrigger = false;     // Близко ли игрок
-    private bool isBusy;                // Занято ли LabMachine (сначала занята)
-    private bool isMedicine = false;    // Готово ли лекарство
+    [Header("Medicine Info")]
+    [SerializeField] private Item itemToGive;
 
-    // Colliders
-    private Collider interactionTrigger;
+    [Header("Components Info")]
+    [SerializeField] private List<Item> components;
+
+    [Header("UI")]
+    [SerializeField] private Slider slider;
+    [SerializeField] float waitTime = 4f;
+    [SerializeField] private List<Image> resultImages;
+    [SerializeField] private List<Image> componentsImages;
+
+    private float clickTime, timePassed;
 
     private void Start() {
-        interactionTrigger = GetComponent<Collider>();
+        interactionObject = GetComponent<CapsuleCollider>();
         slider = GetComponentInChildren<Slider>(true);
-        isBusy = true;
-        clickTime = Time.time;
-        ShowSlider();
+        medicine = itemToGive.GetComponent<Medicine>();
+
+        RemoveComponents();
     }
 
     void Update()
     {
-        if (onTrigger && GetMouseInput(interactionTrigger)) 
-        {
-            if (isMedicine)
-            {
-                player.ShowBottle();
-                isMedicine = false;
-            }
-            else if (!isBusy)   // чтобы повторне не начать таймер
-            {
-                isBusy = true;
-                clickTime = Time.time;
-                ShowSlider();
-            }
-            
-        }
-
         /// если LabMachine занята, то обновляем таймер
         if (isBusy)
         {
             timePassed = Time.time - clickTime;
             if (timePassed > waitTime)
             {
-                HideSlider();
+                medicineIsReady = true;
                 isBusy = false;
-                isMedicine = true;
             }
             else 
             {
                 FillSlider(timePassed / waitTime);
             }
+        } 
+        else if (onTrigger)
+        {
+            if (MouseScript.GetMouseInput(interactionObject))
+            {
+                if (medicineIsReady)
+                {
+                    for (int i = 0; i < 3; i++)
+                        medicine.image.Add(resultImages[i].sprite);
+                    Player.instance.TakeItem(medicine);
+                    medicineIsReady = false;
+                    HideSlider();
+                }
+                else
+                {
+                    if (components.Count < 3 && Player.instance.isCarrying && Player.instance.carryingItem.type == Type.Powder)
+                    {
+                        AddComponent();
+                        Player.instance.RemoveItem();
+                    }
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                if (components.Count > 0)
+                {
+                    isBusy = true;
+                    clickTime = Time.time;
+                    ShowSlider();
+                    RemoveComponents();
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                RemoveComponents();
+            }
         }
+    }
+
+    private void RemoveComponents()
+    {
+        components.Clear();
+        for (int i = 0; i < componentsImages.Count; i++)
+        {
+            componentsImages[i].gameObject.SetActive(false);
+        }
+
+        for (int i = 0; i < resultImages.Count; i++)
+        {
+            resultImages[i].gameObject.SetActive(false);
+        }
+    }
+
+    private void AddComponent()
+    {
+        int[] colors = { 0, 0, 0 };
+
+        if (components.Count == 0)
+            for (int i = 0; i < 3; i++) 
+                resultImages[i].gameObject.SetActive(true);
+
+        Item itemToAdd = Player.instance.carryingItem;
+        components.Add(itemToAdd);
+
+        for (int i = 0; i < components.Count; i++)
+            colors[i] = components[i].GetComponent<Powder>().color;
+
+        medicine.CreateMedicine(resultImages, colors);
+
+        componentsImages[components.Count - 1].sprite = itemToAdd.image[0];
+        componentsImages[components.Count - 1].gameObject.SetActive(true);
     }
 
     // Trigger Functions

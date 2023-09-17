@@ -2,14 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Bed : MouseScript
+public class Bed : MonoBehaviour
 {
-    public PlayerController player;
     public int bedIndex;
     public bool isOccupied;
     private Collider interactionTrigger;
     private Patient patient;
-    private BunksManager bunksManager;
     private bool onTrigger = false;
 
     private void Start()
@@ -20,9 +18,8 @@ public class Bed : MouseScript
     private void Update() {
         if (onTrigger && isOccupied) 
         {
-            if (player.isCarryMedicine && GetMouseInput(interactionTrigger)) {
-                Debug.Log("Bed " + bedIndex + " interacted");
-                player.HideBottle();
+            if (Player.instance.isCarrying && MouseScript.GetMouseInput(interactionTrigger)) {
+                Player.instance.RemoveItem();
                 StartCoroutine(patient.GoToExit());
                 FreeBed();
             }

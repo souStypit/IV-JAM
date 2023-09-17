@@ -5,35 +5,30 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public GameObject Bottle;
-    private Vector3 initPos;
-    public bool isCarryMedicine = false;
     private CharacterController characterController;
+    private Animator animator;
     [SerializeField] private float speed;
 
     void Start()
     {
+        animator = GetComponentInChildren<Animator>();
         characterController = GetComponent<CharacterController>();
-        initPos = transform.position;
     }
 
     void Update()
     {
         Vector3 move = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical"));
 
-        transform.position += move * Time.deltaTime * speed;
-        transform.position = new Vector3(transform.position.x, initPos.y,  transform.position.z);
-    }
+        characterController.Move(move * Time.deltaTime * speed);
 
-    public void ShowBottle()
-    {
-        Bottle.SetActive(true);
-        isCarryMedicine = true;
-    }
 
-    public void HideBottle()
-    {
-        Bottle.SetActive(false);
-        isCarryMedicine = false;
+
+        if (move != Vector3.zero)
+        {
+            transform.rotation = Quaternion.LookRotation(move.normalized);
+            animator.SetBool("Run", true);
+        }
+        else
+            animator.SetBool("Run", false);
     }
 }
