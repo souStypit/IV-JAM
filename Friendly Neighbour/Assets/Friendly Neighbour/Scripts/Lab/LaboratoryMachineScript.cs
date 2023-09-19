@@ -58,7 +58,8 @@ public class LaboratoryMachineScript : MonoBehaviour
                 if (medicineIsReady)
                 {
                     for (int i = 0; i < 3; i++)
-                        medicine.image.Add(resultImages[i].sprite);
+                        medicine.image[i] = resultImages[i].sprite;
+
                     Player.instance.TakeItem(medicine);
                     medicineIsReady = false;
                     HideSlider();
@@ -93,7 +94,6 @@ public class LaboratoryMachineScript : MonoBehaviour
 
     private void RemoveComponents()
     {
-        components.Clear();
         for (int i = 0; i < componentsImages.Count; i++)
         {
             componentsImages[i].gameObject.SetActive(false);
@@ -103,6 +103,8 @@ public class LaboratoryMachineScript : MonoBehaviour
         {
             resultImages[i].gameObject.SetActive(false);
         }
+
+        components.Clear();
     }
 
     private void AddComponent()
@@ -116,8 +118,9 @@ public class LaboratoryMachineScript : MonoBehaviour
         Item itemToAdd = Player.instance.carryingItem;
         components.Add(itemToAdd);
 
-        for (int i = 0; i < components.Count; i++)
+        for (int i = 0; i < components.Count; i++) {
             colors[i] = components[i].GetComponent<Powder>().color;
+        }
 
         medicine.CreateMedicine(resultImages, colors);
 
